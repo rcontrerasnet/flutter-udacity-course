@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'category_route.dart';
+import 'login_form.dart';
 
 const padding = EdgeInsets.all(16.0);
 
@@ -11,7 +12,7 @@ void main() {
         appBar: AppBar(
           title: Text('Hello Rectangle'),
         ),
-        body: CategoryRoute()
+        body: LoginForm() //CategoryRoute()
       ),
     ),
   );
