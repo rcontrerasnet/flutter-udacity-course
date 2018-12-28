@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'cateogry.dart';
+import 'category_route.dart';
 
 const padding = EdgeInsets.all(16.0);
-const _categoryName = 'Cake';
-const _categoryIcon = Icons.cake;
-const _categoryColor = Colors.green;
 
 void main() {
   runApp(
@@ -14,8 +11,7 @@ void main() {
         appBar: AppBar(
           title: Text('Hello Rectangle'),
         ),
-        body: Category(
-            icon: _categoryIcon, name: _categoryName, color: _categoryColor),
+        body: CategoryRoute()
       ),
     ),
   );
