@@ -12,7 +12,7 @@ void main() {
         appBar: AppBar(
           title: Text('Hello Rectangle'),
         ),
-        body: LoginForm() //CategoryRoute()
+        body: CategoryRoute()
       ),
     ),
   );
