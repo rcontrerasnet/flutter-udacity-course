@@ -33,10 +33,11 @@ class Category extends StatelessWidget {
             backgroundColor: color,
           ),
           body: ConverterRoute(
-            categoryColor: color,
-            categoryName: name,
+            color: color,
+            name: name,
             units: units,
           ),
+          resizeToAvoidBottomPadding: false,
         );
       },
     ));
@@ -51,8 +52,8 @@ class Category extends StatelessWidget {
         height: _rowHeight,
         child: InkWell(
           borderRadius: _borderRadius,
-          highlightColor: this.color,
-          splashColor: this.color,
+          highlightColor: this.color['highlight'],
+          splashColor: this.color['splash'],
           onTap: () {
             _navigateToConverter(context);
           },
