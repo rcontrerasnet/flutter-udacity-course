@@ -1,19 +1,35 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import 'package:flutter/material.dart';
-import 'package:hello_rectangle/category.dart';
-import 'package:hello_rectangle/unit.dart';
+
+import 'category.dart';
+import 'category_tile.dart';
+import 'unit.dart';
+import 'backdrop.dart';
+import 'unit_converter.dart';
 
 final _backgroundColor = Colors.green[100];
 
-class CategoryRoute extends StatefulWidget{
+/// Category Route (screen).
+///
+/// This is the 'home' screen of the Unit Converter. It shows a header and
+/// a list of [Categories].
+///
+/// While it is named CategoryRoute, a more apt name would be CategoryScreen,
+/// because it is responsible for the UI at the route's destination.
+class CategoryRoute extends StatefulWidget {
   const CategoryRoute();
 
   @override
   _CategoryRouteState createState() => _CategoryRouteState();
 }
 
-class _CategoryRouteState extends State<CategoryRoute>{
+class _CategoryRouteState extends State<CategoryRoute> {
+  Category _defaultCategory;
+  Category _currentCategory;  
   final _categories = <Category>[];
-
   static const _categoryNames = <String>[
     'Length',
     'Area',
@@ -22,9 +38,8 @@ class _CategoryRouteState extends State<CategoryRoute>{
     'Time',
     'Digital Storage',
     'Energy',
-    'Currency'
+    'Currency',
   ];
-
   static const _baseColors = <ColorSwatch>[
     ColorSwatch(0xFF6AB7A8, {
       'highlight': Color(0xFF6AB7A8),
@@ -62,28 +77,64 @@ class _CategoryRouteState extends State<CategoryRoute>{
   ];
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    for(var i = 0; i < _categoryNames.length; i++){
-      _categories.add(Category(
+    for (var i = 0; i < _categoryNames.length; i++) {
+      var category = Category(
         name: _categoryNames[i],
         color: _baseColors[i],
-        icon: Icons.cake,
+        iconLocation: Icons.cake,
         units: _retrieveUnitList(_categoryNames[i]),
-      ));
+      );
+
+      if(i == 0){
+        _defaultCategory = category;
+      }
+
+      _categories.add(category);
+
     }
   }
 
-  Widget _buildCategoryWidgets(){
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) => _categories[index],
-      itemCount: _categories.length
-    );
+  // TODO: Fill out this function
+  /// Function to call when a [Category] is tapped.
+  void _onCategoryTap(Category category) {
+    setState(() {
+          _currentCategory = category;
+        });
   }
 
-  // Returns a list of mock [Unit]s.
-  List<Unit> _retrieveUnitList(String categoryName){
-    return List.generate(10, (int i){
+  /// Makes the correct number of rows for the list view.
+  ///
+  /// For portrait, we use a [ListView].
+  Widget _buildCategoryWidgets(Orientation deviceOrientation) {
+    if(deviceOrientation == Orientation.portrait){
+    return ListView.builder(
+      itemBuilder: (BuildContext context, int index) {
+        return CategoryTile(
+          category: _categories[index],
+          onTap: _onCategoryTap,
+        );
+      },
+      itemCount: _categories.length,
+    );
+    }else{
+      return GridView.count(
+        crossAxisCount: 2,
+        childAspectRatio: 3.0,
+        children: _categories.map((Category c){
+          return CategoryTile(
+            category: c,
+            onTap: _onCategoryTap,
+          );
+        }).toList(),
+      );
+    }
+  }
+
+  /// Returns a list of mock [Unit]s.
+  List<Unit> _retrieveUnitList(String categoryName) {
+    return List.generate(10, (int i) {
       i += 1;
       return Unit(
         name: '$categoryName Unit $i',
@@ -93,32 +144,38 @@ class _CategoryRouteState extends State<CategoryRoute>{
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     
-    final listView = Container(
-      color: _backgroundColor,
-      padding: EdgeInsets.symmetric(horizontal: 8.0),
-      child: _buildCategoryWidgets(),
-    );
-
-    final appBar = AppBar(
-      elevation: 0.0,
-      title: Text(
-        'Unit Converter',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 30.0,
+    if(_categories.isEmpty){
+      return Center(
+        child: Container(
+          height: 180.0,
+          width: 180.0,
+          child: CircularProgressIndicator(),
         ),
-      ),
-      centerTitle: true,
-      backgroundColor: _backgroundColor,
+      );
+    }
+
+    assert(debugCheckHasMediaQuery(context));
+        
+    final listView = Padding(
+      padding: EdgeInsets.only(
+        left: 8.0,
+        right:8.0,
+        bottom:18.0,        
+      ),      
+      child: _buildCategoryWidgets(MediaQuery.of(context).orientation),
     );
 
-    return Scaffold(
-      appBar: appBar,
-      body: listView,
-    );
-
+    return Backdrop(
+      currentCategory:
+        _currentCategory == null ? _defaultCategory : _currentCategory,
+        frontPanel: _currentCategory == null
+        ? UnitConverter(category: _defaultCategory)
+        : UnitConverter(category: _currentCategory),
+        backPanel: listView,
+        frontTitle:Text('Unit Converter'),
+        backTitle: Text('Select a Category'),
+    );    
   }
-
 }

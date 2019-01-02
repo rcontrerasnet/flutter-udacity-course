@@ -1,85 +1,33 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// To keep your imports tidy, follow the ordering guidelines at
+// https://www.dartlang.org/guides/language/effective-dart/style#ordering
 import 'package:flutter/material.dart';
-import 'package:hello_rectangle/converter_route.dart';
-import 'package:hello_rectangle/unit.dart';
+import 'package:meta/meta.dart';
 
-final _rowHeight = 100.0;
-final _borderRadius = BorderRadius.circular(_rowHeight / 2);
+import 'unit.dart';
 
-class Category extends StatelessWidget {
-  final IconData icon;
+/// A [Category] keeps track of a list of [Unit]s.
+class Category {
   final String name;
   final ColorSwatch color;
   final List<Unit> units;
+  final IconData iconLocation;
 
-  const Category(
-      {Key key, @required this.icon, @required this.name, @required this.color, @required this.units})
-      : assert(name != null),
+  /// Information about a [Category].
+  ///
+  /// A [Category] saves the name of the Category (e.g. 'Length'), a list of its
+  /// its color for the UI, units for conversions (e.g. 'Millimeter', 'Meter'),
+  /// and the icon that represents it (e.g. a ruler).
+  const Category({
+    @required this.name,
+    @required this.color,
+    @required this.units,
+    @required this.iconLocation,
+  })  : assert(name != null),
         assert(color != null),
-        assert(icon != null),
         assert(units != null),
-        super(key: key);
-
-  void _navigateToConverter(BuildContext context){
-    Navigator.of(context).push(MaterialPageRoute<Null>(
-      builder: (BuildContext context){
-        return Scaffold(
-          appBar: AppBar(
-            elevation: 1.0,
-            title: Text(
-              name,
-              style: Theme.of(context).textTheme.display1,
-            ),
-            centerTitle: true,
-            backgroundColor: color,
-          ),
-          body: ConverterRoute(
-            color: color,
-            name: name,
-            units: units,
-          ),
-          resizeToAvoidBottomPadding: false,
-        );
-      },
-    ));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    assert(debugCheckHasMaterial(context));
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        height: _rowHeight,
-        child: InkWell(
-          borderRadius: _borderRadius,
-          highlightColor: this.color['highlight'],
-          splashColor: this.color['splash'],
-          onTap: () {
-            _navigateToConverter(context);
-          },
-          child: Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(right: 16.0),
-                  child: Icon(this.icon, size: 60),
-                ),
-                Center(
-                  child: Text(this.name,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.display1.copyWith(
-                            color: this.color,
-                            fontSize: 24.0,
-                            fontWeight: FontWeight.w700,
-                          )),
-                )
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+        assert(iconLocation != null);
 }
