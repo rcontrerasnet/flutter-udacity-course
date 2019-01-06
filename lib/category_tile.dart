@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
 import 'category.dart';
-import 'unit_converter.dart';
 
 // We use an underscore to indicate that these variables are private.
 // See https://www.dartlang.org/guides/language/effective-dart/design#libraries
@@ -27,33 +26,9 @@ class CategoryTile extends StatelessWidget {
   const CategoryTile({
     Key key,
     @required this.category,
-    @required this.onTap,
+    this.onTap,
   })  : assert(category != null),
-        assert(onTap != null),
         super(key: key);
-
-  /// Navigates to the [UnitConverter].
-  void _navigateToConverter(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute<Null>(
-      builder: (BuildContext context) {
-        return Scaffold(
-          appBar: AppBar(
-            elevation: 1.0,
-            title: Text(
-              category.name,
-              style: Theme.of(context).textTheme.display1,
-            ),
-            centerTitle: true,
-            backgroundColor: category.color,
-          ),
-          body: UnitConverter(category: category),
-          // This prevents the attempt to resize the screen when the keyboard
-          // is opened
-          resizeToAvoidBottomPadding: false,
-        );
-      },
-    ));
-  }
 
   /// Builds a custom widget that shows [Category] information.
   ///
@@ -65,7 +40,8 @@ class CategoryTile extends StatelessWidget {
   // See https://docs.flutter.io/flutter/material/Theme-class.html
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
+      color:
+          onTap == null ? Color.fromRGBO(50, 50, 50, 0.2) : Colors.transparent,
       child: Container(
         height: _rowHeight,
         child: InkWell(
@@ -73,8 +49,8 @@ class CategoryTile extends StatelessWidget {
           highlightColor: category.color['highlight'],
           splashColor: category.color['splash'],
           // We can use either the () => function() or the () { function(); }
-          // syntax.          
-          onTap: () => _navigateToConverter(context),
+          // syntax.
+          onTap: onTap == null ? null : () => onTap(category),
           child: Padding(
             padding: EdgeInsets.all(8.0),
             child: Row(
@@ -86,14 +62,7 @@ class CategoryTile extends StatelessWidget {
               children: [
                 Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: category.iconLocation != null ?
-                  AspectRatio(
-                    aspectRatio: 1.0,
-                    child: Image.asset(
-                      category.iconLocation,
-                      width: 100.0,
-                      fit: BoxFit.fitWidth),
-                  ) : null,
+                  child: Image.asset(category.iconLocation),
                 ),
                 Center(
                   child: Text(
