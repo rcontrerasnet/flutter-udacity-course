@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import 'api.dart';
+import 'backdrop.dart';
 import 'category.dart';
 import 'category_tile.dart';
 import 'unit.dart';
-import 'backdrop.dart';
 import 'unit_converter.dart';
 
 /// Category Route (screen).
@@ -29,6 +31,7 @@ class CategoryRoute extends StatefulWidget {
 class _CategoryRouteState extends State<CategoryRoute> {
   Category _defaultCategory;
   Category _currentCategory;  
+  
   final _categories = <Category>[];
   
   static const _baseColors = <ColorSwatch>[
@@ -85,6 +88,7 @@ class _CategoryRouteState extends State<CategoryRoute> {
     // assets/data/regular_units.json
     if (_categories.isEmpty) {
       await _retrieveLocalCategories();
+      await _retrieveApiCategory();
     }
   }
 
@@ -128,11 +132,43 @@ class _CategoryRouteState extends State<CategoryRoute> {
     }
   }
 
+  Future<void> _retrieveApiCategory() async {
+    setState((){
+      _categories.add(Category(
+        name: apiCategory['name'],
+        units: [],
+        color: _baseColors.last,
+        iconLocation: _icons.last,
+        ));
+    });
+
+    final api = Api();
+    final jsonUnits = await api.getUnits(apiCategory['route']);
+    
+    if(jsonUnits != null){
+      final units = <Unit>[];
+      
+      for(var unit in jsonUnits){
+        units.add(Unit.fromJson(unit));
+      }
+      
+      setState(() {
+        _categories.removeLast();
+        _categories.add(Category(
+          name: apiCategory['name'],
+          units: units,
+          color: _baseColors.last,
+          iconLocation: _icons.last
+        ));
+      });
+    }
+  }
+
   /// Function to call when a [Category] is tapped.
   void _onCategoryTap(Category category) {
     setState(() {
-          _currentCategory = category;
-        });
+      _currentCategory = category;
+    });
   }
 
   /// Makes the correct number of rows for the list view.

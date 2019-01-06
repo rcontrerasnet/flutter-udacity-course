@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
+import 'api.dart';
 import 'category.dart';
 import 'unit.dart';
 
@@ -32,6 +35,7 @@ class _UnitConverterState extends State<UnitConverter> {
   String _convertedValue = '';
   List<DropdownMenuItem> _unitMenuItems;
   bool _showValidationError = false;
+  final _inputKey = GlobalKey(debugLabel: 'inputText');
 
   @override
   void initState() {
@@ -40,8 +44,14 @@ class _UnitConverterState extends State<UnitConverter> {
     _setDefaults();
   }
 
-  // TODO: _createDropdownMenuItems() and _setDefaults() should also be called
-  // each time the user switches [Categories].
+  @override
+  void didUpdateWidget(old){
+    super.didUpdateWidget(old);
+    if(old.category != widget.category){
+      _createDropdownMenuItems();
+      _setDefaults();
+    }
+  }
 
   /// Creates fresh list of [DropdownMenuItem] widgets, given a list of [Unit]s.
   void _createDropdownMenuItems() {
@@ -69,6 +79,9 @@ class _UnitConverterState extends State<UnitConverter> {
       _fromValue = widget.category.units[0];
       _toValue = widget.category.units[1];
     });
+    if(_inputValue != null){
+      _updateConversion();
+    }
   }
 
   /// Clean up conversion; trim trailing zeros, e.g. 5.500 -> 5.5, 10.0 -> 10
@@ -87,11 +100,21 @@ class _UnitConverterState extends State<UnitConverter> {
     return outputNum;
   }
 
-  void _updateConversion() {
-    setState(() {
-      _convertedValue =
+  Future<void> _updateConversion() async {
+    if(widget.category.name == apiCategory['name']){
+      final api = Api();
+      final conversion = await api.convert(apiCategory['name'], _inputValue.toString(), _fromValue.name, _toValue.name);
+      
+      setState(() {
+        _convertedValue = _format(conversion);
+      });
+
+    } else {
+      setState(() {
+        _convertedValue =
           _format(_inputValue * (_toValue.conversion / _fromValue.conversion));
-    });
+      });
+    }
   }
 
   void _updateInputValue(String input) {
@@ -184,11 +207,12 @@ class _UnitConverterState extends State<UnitConverter> {
           // accepts numbers and calls the onChanged property on update.
           // You can read more about it here: https://flutter.io/text-input
           TextField(
+            key:_inputKey,
             style: Theme.of(context).textTheme.display1,
             decoration: InputDecoration(
               labelStyle: Theme.of(context).textTheme.display1,
               errorText: _showValidationError ? 'Invalid number entered' : null,
-              labelText: 'Input',
+              labelText: 'Input Top',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0.0),
               ),
@@ -242,27 +266,6 @@ class _UnitConverterState extends State<UnitConverter> {
         output,
       ],
     );
-
-    /*return Padding(
-      padding: _padding,
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints){
-          if(constraints.maxHeight >  constraints.maxWidth){
-            return SingleChildScrollView(child: converter,);
-          } else {
-            return SingleChildScrollView(
-              child: Center(
-                child: Container(
-                  width: 450.0,
-                  child: converter,
-                ),
-              ),
-            );
-          }
-        },
-      )
-    );*/
-
 
     return Padding(
       padding: _padding,
